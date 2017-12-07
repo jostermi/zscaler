@@ -9,7 +9,9 @@ To Execute all of these programs
 -u to define the Zscaler cloud that you are configured on 
 -c to pass the jsession ID. 
 
-
+for example 
+        python3 Security.py -u admin.zscloud.net -c JSESSIONID=6088D7E771AD061D8B08DDB2F155ABCD
+        
 The JSESSIONID is created by this code snippit. 
 
         seed = 'API Key from the GUI'
