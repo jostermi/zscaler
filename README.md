@@ -16,16 +16,16 @@ output should look like the below
         Remember you have to escape all special characters when you type in your password. To escape a 
         special character use "\" before it for example if the password was Zsc@l3r123 then you have to 
         type ZSc\@l3r123 instead notice the "\"
-##############################
+        ##############################
 Activate.py allows you to check on the status of the configuration as well as allows you to execute those changes. 
-##############################
+        ##############################
 Audit.py allows you to create and audit log, validate the status of the audit log and download. For this example we are only looking back one hour for the audit log. Currently downloading the audit log is broken. 
-##############################
+        ##############################
 DefineUserMagagement.py this program allows you to look at groups, departments, users, create users, and delete users. 
-##############################
+        ##############################
 URL.py is a simple program to look at URL catagories, create a new custom URL catagory, add URLs to the custom catagory, and validate URLs for which catagory they should be in. 
 These are just samples to help reduce time. 
-##############################
+        ##############################
 To Execute all of these programs 
 -u to define the Zscaler cloud that you are configured on 
 -c to pass the jsession ID. 
