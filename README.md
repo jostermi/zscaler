@@ -32,15 +32,16 @@ DefineUserMagagement.py this program allows you to look at groups, departments, 
         ##############################
         
 URL.py is a simple program to look at URL catagories, create a new custom URL catagory, add URLs to the custom catagory, and validate URLs for which catagory they should be in. 
-These are just samples to help reduce time. 
         
         ##############################
         
-To Execute all of these programs 
--u to define the Zscaler cloud that you are configured on 
--c to pass the jsession ID. 
+        To Execute all of these programs 
+        -u to define the Zscaler cloud that you are configured on 
+        -c to pass the jsession ID. 
+        
 
-for example 
+These are just samples to help reduce time. To execute the programs for example 
+        
         python3 Security.py -u admin.zscloud.net -c JSESSIONID=6088D7E771AD061D8B08DDB2F155ABCD
         
 The JSESSIONID is created by this code snippit. 
