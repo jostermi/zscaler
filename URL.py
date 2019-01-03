@@ -118,7 +118,7 @@ Create New URL Catagory
 '''
 def CustomURLCategory():
 	ClearScreen()
-	print (figlet_format('Delete Custom URL Catagory', font='small'))
+	print (figlet_format('Create Custom URL Catagory', font='small'))
 
 	payload = {  
 	   "configuredName":"online blogs test",
@@ -146,7 +146,7 @@ Delete New URL Catagory
 '''
 def DeleteURLCategory():
 	ClearScreen()
-	print (figlet_format('Create URL Catagories', font='small'))
+	print (figlet_format('Delete URL Catagories', font='small'))
 
 #	conn.request("POST", "/api/v1/urlCategories", json.dumps(payload), headers)
 	conn.request("DELETE", "/api/v1/urlCategories/CUSTOM_01", headers=headers)
@@ -170,7 +170,7 @@ def URLLookup():
 	print (figlet_format('URL Lookup', font='small'))
 	payload = [  
 	   "president.ir/en/",
-	   "www.facebook.com",
+	   "facebook.getoffer.info/05FeA22Ada/",
 	   "bbc.com"
 	]
 
@@ -183,16 +183,36 @@ def URLLookup():
 #	print(data.decode("utf-8")) 
 	Pause()
 
+
+
+'''
+====================================================================================
+URL Quota
+------------------------------------------------------------------------------------
+'''
+def URLQuota():
+	ClearScreen()
+	print (figlet_format('URL Quota', font='small'))
+
+	conn.request("GET", "/api/v1/urlCategories/urlQuota", headers=headers)
+
+	res = conn.getresponse()
+	data = res.read()
+
+	PrettyPrint(json.loads(data.decode()))
+#	print(data.decode("utf-8")) 
+	Pause()
+
+
 '''
 ====================================================================================
 Define Tests that need to run
 ------------------------------------------------------------------------------------
 '''
 
-#ALLURLCategories()
-
-#CustomURLCategory()
-#DeleteURLCategory()
-#UserURLCategories()
+ALLURLCategories()
+CustomURLCategory()
+UserURLCategories()
+DeleteURLCategory()
 URLLookup()
-
+URLQuota()
