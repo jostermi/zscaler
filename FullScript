@@ -1,0 +1,376 @@
+
+import http.client
+import json
+import time
+import datetime
+import json
+import logging
+import requests
+import argparse
+import os
+import sys
+import re
+from http import cookies
+import urllib.parse
+import httplib2
+import requests.packages.urllib3
+from pyfiglet import figlet_format
+import arrow
+import csv
+from subprocess import Popen
+#
+
+# =================================================================================
+
+'''
+====================================================================================
+# Requirements
+------------------------------------------------------------------------------------
+Pip install the following:
+    - json
+    - http2
+    - pyfiglet
+    - arrow
+    - argparse
+    - csv
+====================================================================================
+# Requirements
+------------------------------------------------------------------------------------
+python3 Authentication-PWD.py -u admin@domain.com -p zscaler -z admin.zscloud.net -a TU44cliwYc7O
+output should look like the below
+Timestamp: 1512835187176 	Key UYwUwi4Olw77
+JSESSIONID=B7AE7E5A282474A694652EFB5C11E829
+{"authType":"ADMIN_LOGIN","obfuscateApiKey":true}
+Remember you have to escape all special characters when you type in your password. To escape a 
+special character use "\" before it. For example if the password was zsc@ler then you have to 
+type zsc\@ler instead, notice the "\"
+'''
+# ====================================================================================
+# GLOBALS
+# ------------------------------------------------------------------------------------
+
+requests.packages.urllib3.disable_warnings()
+
+parser = argparse.ArgumentParser(description='ZSCALER API Demo Script')
+parser.add_argument('-u','--user',help='username', required=True)
+parser.add_argument('-p','--password',help='password', required=True)
+parser.add_argument('-a','--api',help='api key', required=True)
+parser.add_argument('-z','--zcloud',help='URL of ZSCALER Cluster', required=True)
+args = vars(parser.parse_args())
+
+
+
+def parse_jsessionid(cookie):
+    jsessionid = re.sub(r';.*$', "", cookie)
+    return jsessionid
+
+seed = args["api"]
+now = int(time.time() * 1000)
+n = str(now)[-6:]
+r = str(int(n) >> 1).zfill(6)
+key = ""
+for i in range(0, len(str(n)), 1):
+    key += seed[int(str(n)[i])]
+for j in range(0, len(str(r)), 1):
+    key += seed[int(str(r)[j])+2]
+ 
+print("Timestamp:", now, "\tKey", key)
+
+conn = http.client.HTTPSConnection(args["zcloud"])
+
+payload = {
+	"username":args["user"],
+	"password":args["password"],
+	"timestamp":now,
+	"apiKey":key
+	}
+#print(payload)
+
+header = {
+    'content-type': "application/json",
+    'cache-control': "no-cache"
+    }
+http = httplib2.Http()
+response, content = http.request("https://admin.zscloud.net/api/v1/authenticatedSession", 'POST', headers=header, body=json.dumps(payload))
+
+
+cookie = response['set-cookie']
+jsessionid = re.sub(r';.*$', "", cookie)
+print(jsessionid)
+print(content.decode("utf-8"))
+
+
+'''
+====================================================================================
+Debugging function to print formatted json
+
+Variables:
+    - target: json object to be printed
+------------------------------------------------------------------------------------
+'''
+
+def PrettyPrint(target):
+    print (json.dumps(target,sort_keys=True,indent=4))
+
+def Pause():
+    print('Press {enter} or Type "s" to cancel the API call')
+    response = input("")
+    # Type "s{enter}" to skip the API call
+    return True if response is not "s" else False
+
+def ClearScreen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+'''
+====================================================================================
+Authentication Headers 
+------------------------------------------------------------------------------------
+'''
+
+# conn = http.client.HTTPSConnection(args["zcloud"])
+
+headers = {
+    'content-type': "application/json",
+    'cache-control': "no-cache",
+    'cookie': (jsessionid)
+    }
+
+'''
+====================================================================================
+All URL Catagories
+------------------------------------------------------------------------------------
+'''
+def ALLURLCategories():
+    ClearScreen()
+    print (figlet_format('List All URL Catagories', font='small'))
+
+    conn.request("GET", "/api/v1/urlCategories?customOnly=False", headers=headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    PrettyPrint(json.loads(data.decode()))
+#   print(data.decode("utf-8")) 
+    Pause()
+'''
+====================================================================================
+All URL Catagories
+------------------------------------------------------------------------------------
+'''
+def UserURLCategories():
+    ClearScreen()
+    print (figlet_format('List Custom URL Catagories', font='small'))
+
+    conn.request("GET", "/api/v1/urlCategories?customOnly=True", headers=headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    PrettyPrint(json.loads(data.decode()))
+#   print(data.decode("utf-8")) 
+    Pause()
+
+'''
+====================================================================================
+Create New URL Catagory
+------------------------------------------------------------------------------------
+'''
+def CustomURLCategory():
+    ClearScreen()
+    print (figlet_format('Create Custom URL Catagory', font='small'))
+
+    payload = {  
+       "configuredName":"PleaseDelete",
+       "customCategory":"true",
+       "superCategory":"User-Defined",
+       "keywords":["Delete"],
+       "urls":[  
+          "livejournal.com"
+       ]
+    }
+
+    conn.request("POST", "/api/v1/urlCategories", json.dumps(payload), headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    PrettyPrint(json.loads(data.decode()))
+#   print(data.decode("utf-8")) 
+    Pause()
+
+'''
+====================================================================================
+Delete New URL Catagory
+------------------------------------------------------------------------------------
+'''
+def DeleteURLCategory():
+    ClearScreen()
+    print (figlet_format('Delete URL Catagories', font='small'))
+
+#   conn.request("POST", "/api/v1/urlCategories", json.dumps(payload), headers)
+    conn.request("DELETE", "/api/v1/urlCategories/PleaseDelete", headers=headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+#   PrettyPrint(json.loads(data.decode()))
+    print(data.decode("utf-8")) 
+    Pause()
+
+
+
+'''
+====================================================================================
+URL Lookup
+------------------------------------------------------------------------------------
+'''
+def URLLookup():
+    ClearScreen()
+    print (figlet_format('URL Lookup', font='small'))
+    payload = [  
+       "president.ir/en/",
+       "facebook.getoffer.info/05FeA22Ada/",
+       "bbc.com",
+       "2accomplish.com",
+       "www.buxomcosmetics.com:443",
+       "agrao.in/images/9cd524a94d8146a9cd524a94d861600a0.png"
+    ]
+
+    conn.request("POST", "/api/v1/urlLookup", json.dumps(payload), headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    PrettyPrint(json.loads(data.decode()))
+#   print(data.decode("utf-8")) 
+    Pause()
+
+
+
+'''
+====================================================================================
+URL Quota
+------------------------------------------------------------------------------------
+'''
+def URLQuota():
+    ClearScreen()
+    print (figlet_format('URL Quota', font='small'))
+
+    conn.request("GET", "/api/v1/urlCategories/urlQuota", headers=headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    PrettyPrint(json.loads(data.decode()))
+#   print(data.decode("utf-8")) 
+    Pause()
+
+'''
+====================================================================================
+Get a list of all VPN Credentials
+------------------------------------------------------------------------------------
+'''
+def GetVPNCredentials():
+    ClearScreen()
+    print (figlet_format('VPN Credenials', font='small'))
+
+    conn.request("GET", "/api/v1/vpnCredentials", headers=headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    PrettyPrint(json.loads(data.decode()))
+#   print(data.decode("utf-8")) 
+    Pause()
+
+
+'''
+====================================================================================
+Create new VPN Credentials
+------------------------------------------------------------------------------------
+'''
+def AddVPNCredentials():
+#    ClearScreen()
+    print (figlet_format('Create VPN Users', font='small'))
+
+    payload = {
+        "type": "UFQDN",
+        "fqdn": "APIDelete@jostermiller.zscloud.net",
+        "comments":"created automatically",
+        "preSharedKey":"newPassword123!"
+    }
+
+    conn.request("POST", "/api/v1/vpnCredentials", json.dumps(payload), headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    PrettyPrint(json.loads(data.decode()))
+#   print(data.decode("utf-8")) 
+    Pause()
+
+
+'''
+====================================================================================
+Bulk Delete VPN Credentials
+------------------------------------------------------------------------------------
+'''
+def BulkDeleteUsers():
+#    ClearScreen()
+    print (figlet_format('Bulk Delete VPN Users', font='small'))
+
+    payload = {
+        "ids": [ 16341322,
+        16160103
+        ]
+    }
+
+    conn.request("POST", "/api/v1/vpnCredentials/bulkDelete", json.dumps(payload), headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    PrettyPrint(json.loads(data.decode()))
+#   print(data.decode("utf-8")) 
+    Pause()
+
+
+'''
+====================================================================================
+Get a list of all Locations
+Requires the SDWAN Partner Key
+------------------------------------------------------------------------------------
+'''
+def GetLocations():
+    ClearScreen()
+    print (figlet_format('VPN Locations', font='small'))
+
+    conn.request("GET", "/api/v1/locations", headers=headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    PrettyPrint(json.loads(data.decode()))
+#   print(data.decode("utf-8")) 
+    Pause()
+
+
+
+
+'''
+====================================================================================
+Define Tests that need to run
+------------------------------------------------------------------------------------
+'''
+
+ALLURLCategories()
+CustomURLCategory()
+#UserURLCategories()
+#DeleteURLCategory()
+URLLookup()
+URLQuota()
+GetVPNCredentials()
+#AddVPNCredentials()
+#BulkDeleteUsers()
+GetLocations()
+
